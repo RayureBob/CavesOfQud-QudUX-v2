@@ -35,10 +35,10 @@ namespace XRL.World.Parts
             return true;
         }
 
-        public override void Register(GameObject Object)
+        public override void Register(GameObject Object, IEventRegistrar registrar)
         {
-            Object.RegisterPartEvent(this, "PlayerBeginConversation");
-            base.Register(Object);
+            registrar.Register("PlayerBeginConversation");
+            base.Register(Object, registrar);
         }
 
         public override bool FireEvent(Event E)
