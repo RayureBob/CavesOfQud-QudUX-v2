@@ -59,12 +59,13 @@ namespace XRL.World.Parts
             { "Floating Nearby",    (true, "Floating Nearby")},
         };
 
-        public override void Register(GameObject Object)
+        public override void Register(GameObject Object, IEventRegistrar registrar)
         {
-            Object.RegisterPartEvent(this, _DisplayQuickMenu);
-            Object.RegisterPartEvent(this, _DisplaySettings);
-
-            base.Register(Object);
+            // Object.RegisterPartEvent(this, _DisplayQuickMenu);
+            // Object.RegisterPartEvent(this, _DisplaySettings);
+            registrar.Register(_DisplayQuickMenu);
+            registrar.Register(_DisplaySettings);
+            base.Register(Object, registrar);
         }
 
         public override bool FireEvent(Event E)
@@ -142,19 +143,19 @@ namespace XRL.World.Parts
             }
 
             List<GameObject> orderedGameObjects = new List<GameObject>();
-            foreach(GameObject obj in SelectAndOrderObjects(selection, "MeleeWeapon"))
+            foreach (GameObject obj in SelectAndOrderObjects(selection, "MeleeWeapon"))
             {
                 orderedGameObjects.Add(obj);
                 selection.Remove(obj);
             }
 
-            foreach(GameObject obj in SelectAndOrderObjects(selection, "MissileWeapon"))
+            foreach (GameObject obj in SelectAndOrderObjects(selection, "MissileWeapon"))
             {
                 orderedGameObjects.Add(obj);
                 selection.Remove(obj);
             }
 
-            foreach(GameObject obj in SelectAndOrderObjects(selection, "Armor"))
+            foreach (GameObject obj in SelectAndOrderObjects(selection, "Armor"))
             {
                 orderedGameObjects.Add(obj);
                 selection.Remove(obj);
@@ -170,9 +171,10 @@ namespace XRL.World.Parts
             foreach (var obj in selection)
                 icons.Add(obj.RenderForUI());
 
-            List<int> results = Popup.PickSeveral(
+
+            List<(int selected, int amount)> results = Popup.PickSeveral(
                 "Which item do you want to get ?",
-                options.ToArray(),
+                Options: options.ToArray(),
                 AllowEscape: true,
                 Icons: icons.ToArray()
             );
@@ -181,17 +183,16 @@ namespace XRL.World.Parts
 
             var selectedItems = new List<GameObject>();
 
-            foreach (int index in results)
-                selectedItems.Add(selection[index]);
+            foreach (var sel in results)
+                selectedItems.Add(selection[sel.amount]);
 
             AutoAct.Action = new PickupSelection(selectedItems, ParentObject);
             ParentObject.ForfeitTurn(true);
         }
 
-        public override void LoadData(SerializationReader Reader)
+        public override void Read(GameObject Basis, SerializationReader Reader)
         {
-            base.LoadData(Reader);
-
+            base.Read(Basis, Reader);
             Dictionary<string, ValueTuple<bool, string>> newSettings = new Dictionary<string, ValueTuple<bool, string>>();
             foreach (var key in TierSettings.Keys)
             {
@@ -223,9 +224,9 @@ namespace XRL.World.Parts
             ArmorSettings = newSettings;
         }
 
-        public override void SaveData(SerializationWriter Writer)
+        public override void Write(GameObject basis, SerializationWriter Writer)
         {
-            base.SaveData(Writer);
+            base.Write(basis, Writer);
 
             foreach (var key in TierSettings.Keys)
             {
@@ -267,12 +268,13 @@ namespace XRL.World.Parts
                 }
             }
         }
-    
+
         private IEnumerable<GameObject> SelectAndOrderObjects(List<GameObject> objects, string parentBlueprint)
         {
             return objects.Where(obj => obj.GetBlueprint().InheritsFrom(parentBlueprint))
-                            .OrderByDescending(obj => {
-                                if(!obj.HasTag("Tier")) return 0;
+                            .OrderByDescending(obj =>
+                            {
+                                if (!obj.HasTag("Tier")) return 0;
                                 return obj.GetTier();
                             });
         }
