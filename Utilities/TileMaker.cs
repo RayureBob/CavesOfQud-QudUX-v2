@@ -127,8 +127,8 @@ namespace QudUX.Utilities
             this.BackgroundColor = QudColorUtility.ColorMap['k'];
 
             //gather render data for GameObject similar to how the game does it in Cell.cs
-            Render pRender = go?.pRender;
-            if (pRender == null || !pRender.Visible || Globals.RenderMode != RenderModeType.Tiles)
+            Render render = go?.Render;
+            if (render == null || !render.Visible || Globals.RenderMode != RenderModeType.Tiles)
             {
                 return;
             }
@@ -140,31 +140,31 @@ namespace QudUX.Utilities
             }
             else
             {
-                renderData.Tile = go.pRender.Tile;
+                renderData.Tile = go.Render.Tile;
             }
-            if (!string.IsNullOrEmpty(pRender.TileColor))
+            if (!string.IsNullOrEmpty(render.TileColor))
             {
-                renderData.ColorString = pRender.TileColor;
+                renderData.ColorString = render.TileColor;
             }
             else
             {
-                renderData.ColorString = pRender.ColorString;
+                renderData.ColorString = render.ColorString;
             }
             if (renderOK) //we can't render blueprint-created objects, because the game will throw errors trying to check their current cell
             {
-                go.Render(renderData);
+                go.Render.Render(renderData);
             }
 
             //renderData.Tile can be null if something has a temporary character replacement, like the up arrow from flying
-            this.Tile = !string.IsNullOrEmpty(renderData.Tile) ? renderData.Tile : pRender.Tile;
-            this.RenderString = !string.IsNullOrEmpty(renderData.RenderString) ? renderData.RenderString : pRender.RenderString;
+            this.Tile = !string.IsNullOrEmpty(renderData.Tile) ? renderData.Tile : render.Tile;
+            this.RenderString = !string.IsNullOrEmpty(renderData.RenderString) ? renderData.RenderString : render.RenderString;
             this.BackgroundString = renderData.BackgroundString;
 
             //save render data in our custom TileColorData format, using logic similar to QudItemListElement.InitFrom()
-            if (!string.IsNullOrEmpty(pRender.DetailColor))
+            if (!string.IsNullOrEmpty(render.DetailColor))
             {
-                this.DetailColor = QudColorUtility.ColorMap[pRender.DetailColor[0]];
-                this.DetailColorChar = pRender.DetailColor[0];
+                this.DetailColor = QudColorUtility.ColorMap[render.DetailColor[0]];
+                this.DetailColorChar = render.DetailColor[0];
             }
             //from what I've been able to determine, I believe that the BackgroundString only applies to non-tiles (RenderString) entities (such as gas clouds)
             string colorString = renderData.ColorString + (string.IsNullOrEmpty(this.Tile) ? this.BackgroundString : string.Empty);

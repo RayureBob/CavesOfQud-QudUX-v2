@@ -2,6 +2,9 @@
 using XRL.Core;
 using XRL.World.Parts;
 
+using QudUXLogger = QudUX.Utilities.Logger;
+
+
 namespace XRL.World.Effects
 {
     [Serializable]
@@ -56,7 +59,7 @@ namespace XRL.World.Effects
 
         public override bool Apply(GameObject Object)
         {
-            Brain pBrain = Object.pBrain;
+            Brain pBrain = Object.Brain;
             if (pBrain != null)
             {
                 pBrain.Hibernating = false;
@@ -65,20 +68,18 @@ namespace XRL.World.Effects
             return true;
         }
 
-        public override void Register(GameObject Object)
+        public override void Register(GameObject Object, IEventRegistrar reg)
         {
-            Object.RegisterEffectEvent(this, "EndTurn");
-            Object.RegisterEffectEvent(this, "ZoneActivated");
-            Object.RegisterEffectEvent(this, "BeginConversation");
-            base.Register(Object);
-        }
+            if(reg.IsUnregister)
+            {
+                // find a way to log
+                QudUXLogger.Log("QuestGiverMission is unregistering events");
+            }
 
-        public override void Unregister(GameObject Object)
-        {
-            Object.UnregisterEffectEvent(this, "EndTurn");
-            Object.UnregisterEffectEvent(this, "ZoneActivated");
-            Object.UnregisterEffectEvent(this, "BeginConversation");
-            base.Unregister(Object);
+            reg.Register("EndTurn");
+            reg.Register("ZoneActivated");
+            reg.Register("BeginConversation");
+            base.Register(Object, reg);
         }
 
         public bool KnownButNotSeen(GameObject obj)
@@ -103,7 +104,7 @@ namespace XRL.World.Effects
                 int midDistance = Math.Max((Math.Abs(100 - frame200) - 30), 0) / 10;
                 if (frame200 % 5 < (5 - midDistance))
                 {
-                    E.Tile = this.Object.pRender.Tile;
+                    E.Tile = this.Object.Render.Tile;
                     E.ColorString = "&K";
                 }
                 else
